@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from prompt_toolkit import prompt
 from psycopg import Connection
-from psycopg.rows import dict_row, class_row
+from psycopg.rows import class_row
 from rich.panel import Panel
 from rich.table import Table
 from validators import NonEmptyValidator, YesNoValidator
@@ -48,12 +48,12 @@ class WarehousesHandler:
         table.add_column("Название", style="green", min_width=20)
         table.add_column("Адрес", style="yellow", min_width=30)
 
-        with self.conn.cursor(row_factory=dict_row) as cur:
+        with self.conn.cursor(row_factory=class_row(Warehouse)) as cur:
             cur.execute("SELECT * FROM catalog.warehouses")
-            warehouses = cur.fetchall()
+            warehouses: list[Warehouse] = cur.fetchall()
 
         for warehouse in warehouses:
-            table.add_row(str(warehouse["id"]), warehouse["name"], warehouse["address"])
+            table.add_row(str(warehouse.id), warehouse.name, warehouse.address)
         console.print(table)
 
     def show_warehouse(self, _id: int) -> None:
