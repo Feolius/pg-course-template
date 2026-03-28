@@ -1,9 +1,12 @@
+import logging
+
 from prompt_toolkit import PromptSession
 from psycopg import Connection
 import psycopg
 from rich.panel import Panel
 
 from commands import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from setup import setup_logger
 from warehouses import WarehousesHandler
 from products import ProductsHandler
 from console import console, render_error
@@ -13,6 +16,10 @@ DB_USER: Final[str] = "app_user"
 DB_PASSWORD: Final[str] = "pass"
 DB_HOST: Final[str] = "127.0.0.1"
 DB_PORT: Final[int] = 5432
+
+
+# Если нужно получить больше деталей о psycopg, следует изменить log level на DEBUG
+setup_logger(psycopg_log_level=logging.INFO)
 
 
 def main() -> None:  # pylint: disable=too-many-statements
@@ -25,6 +32,7 @@ def main() -> None:  # pylint: disable=too-many-statements
         port=DB_PORT,
         autocommit=True,
     )
+    logging.info("App Started")
 
     warehouses_handler = WarehousesHandler(conn)
     products_handler = ProductsHandler(conn)
