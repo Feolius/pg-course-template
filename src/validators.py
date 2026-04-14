@@ -32,3 +32,17 @@ class YesNoValidator(Validator):
         text = document.text.lower()
         if text not in ["y", "n", "yes", "no", "д", "н", "да", "нет"]:
             raise ValidationError(message="Введите y/n (yes/no)")
+
+
+class ChoiceValidator(Validator):
+    def __init__(self, choices: list[str], message: str = "Значение должно быть из списка. Используйте Tab для автодополнения."):
+        self.choices = choices
+        self.message = message
+
+    def validate(self, document):
+        text = document.text.strip()
+        if text and text not in self.choices:
+            raise ValidationError(
+                message=self.message,
+                cursor_position=len(text)
+            )
