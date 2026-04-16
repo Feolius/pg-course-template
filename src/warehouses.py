@@ -10,7 +10,6 @@ from validators import ChoiceValidator, NonEmptyValidator, YesNoValidator
 
 from console import console, render_error
 
-
 cities = [
     "Москва",
     "Санкт-Петербург",
@@ -26,11 +25,13 @@ cities = [
     "Красноярск",
     "Воронеж",
     "Пермь",
-    "Волгоград"
+    "Волгоград",
 ]
 
 city_completer = WordCompleter(cities, ignore_case=True, sentence=True)
-city_validator = ChoiceValidator(cities, message="Город должен быть из списка. Используйте Tab для автодополнения.")
+city_validator = ChoiceValidator(
+    cities, message="Город должен быть из списка. Используйте Tab для автодополнения."
+)
 
 
 @dataclass
@@ -79,7 +80,12 @@ class WarehousesHandler:
             warehouses: list[Warehouse] = cur.fetchall()
 
         for warehouse in warehouses:
-            table.add_row(str(warehouse.id), warehouse.city, warehouse.address, warehouse.label or "")
+            table.add_row(
+                str(warehouse.id),
+                warehouse.city,
+                warehouse.address,
+                warehouse.label or "",
+            )
         console.print(table)
 
     def show_warehouse(self, _id: int) -> None:
@@ -95,9 +101,7 @@ class WarehousesHandler:
 
     def add_warehouse(self) -> None:
         city = prompt(
-            "Город: ",
-            validator=city_validator,
-            completer=city_completer
+            "Город: ", validator=city_validator, completer=city_completer
         ).strip()
         address = prompt("Адрес: ", validator=NonEmptyValidator()).strip()
         label = prompt("Метка (необязательно): ").strip() or None
@@ -123,12 +127,15 @@ class WarehousesHandler:
             "Город: ",
             default=warehouse.city,
             validator=city_validator,
-            completer=city_completer
+            completer=city_completer,
         ).strip()
         address = prompt(
             "Адрес: ", default=warehouse.address, validator=NonEmptyValidator()
         ).strip()
-        label = prompt("Метка (необязательно): ", default=warehouse.label or "").strip() or None
+        label = (
+            prompt("Метка (необязательно): ", default=warehouse.label or "").strip()
+            or None
+        )
         self.conn.execute(
             """UPDATE catalog.warehouses SET city = %s, address = %s, label = %s
             WHERE id = %s""",
@@ -155,6 +162,8 @@ class WarehousesHandler:
         if answer in ["y", "yes", "д", "да"]:
             self.conn.execute("DELETE FROM catalog.warehouses WHERE id = %s", (_id,))
             if warehouse.label:
-                console.print(f"[green]Склад в городе {warehouse.city} ({warehouse.label}) удален [/green]")
+                console.print(
+                    f"[green]Склад в городе {warehouse.city} ({warehouse.label}) удален [/green]"
+                )
             else:
                 console.print(f"[green]Склад в городе {warehouse.city} удален [/green]")
