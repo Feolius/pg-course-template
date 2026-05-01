@@ -1,28 +1,62 @@
+from dataclasses import dataclass
 from typing import Final
 
 from prompt_toolkit.completion import NestedCompleter
 
+# Категории команд
+CATEGORY_GENERAL: Final[str] = "ПРОЧЕЕ"
+CATEGORY_WAREHOUSES: Final[str] = "СКЛАДЫ"
+CATEGORY_PRODUCTS: Final[str] = "ТОВАРЫ"
+
+
+@dataclass(frozen=True)
+class Command:
+    text: str
+    description: str
+    category: str
+
+
 # Общие команды
-HELP_CMD: Final[str] = "help"
-EXIT_CMD: Final[str] = "exit"
-CLEAR_CMD: Final[str] = "clear"
+HELP_CMD: Final[Command] = Command("help", "эта справка", CATEGORY_GENERAL)
+EXIT_CMD: Final[Command] = Command("exit", "выход", CATEGORY_GENERAL)
+CLEAR_CMD: Final[Command] = Command("clear", "очистить экран", CATEGORY_GENERAL)
 
 # Команды для складов
-LIST_WAREHOUSES_CMD: Final[str] = "list warehouses"
-SHOW_WAREHOUSE_CMD: Final[str] = "show warehouse"
-ADD_WAREHOUSE_CMD: Final[str] = "add warehouse"
-EDIT_WAREHOUSE_CMD: Final[str] = "edit warehouse"
-DELETE_WAREHOUSE_CMD: Final[str] = "delete warehouse"
+LIST_WAREHOUSES_CMD: Final[Command] = Command(
+    "list warehouses", "список всех складов", CATEGORY_WAREHOUSES
+)
+SHOW_WAREHOUSE_CMD: Final[Command] = Command(
+    "show warehouse", "информация о складе", CATEGORY_WAREHOUSES
+)
+ADD_WAREHOUSE_CMD: Final[Command] = Command(
+    "add warehouse", "добавить склад (интерактивно)", CATEGORY_WAREHOUSES
+)
+EDIT_WAREHOUSE_CMD: Final[Command] = Command(
+    "edit warehouse", "редактировать склад", CATEGORY_WAREHOUSES
+)
+DELETE_WAREHOUSE_CMD: Final[Command] = Command(
+    "delete warehouse", "удалить склад", CATEGORY_WAREHOUSES
+)
 
 # Команды для товаров
-LIST_PRODUCTS_CMD: Final[str] = "list products"
-SHOW_PRODUCT_CMD: Final[str] = "show product"
-ADD_PRODUCT_CMD: Final[str] = "add product"
-EDIT_PRODUCT_CMD: Final[str] = "edit product"
-DELETE_PRODUCT_CMD: Final[str] = "delete product"
+LIST_PRODUCTS_CMD: Final[Command] = Command(
+    "list products", "список всех товаров", CATEGORY_PRODUCTS
+)
+SHOW_PRODUCT_CMD: Final[Command] = Command(
+    "show product", "информация о товаре", CATEGORY_PRODUCTS
+)
+ADD_PRODUCT_CMD: Final[Command] = Command(
+    "add product", "добавить товар (интерактивно)", CATEGORY_PRODUCTS
+)
+EDIT_PRODUCT_CMD: Final[Command] = Command(
+    "edit product", "редактировать товар", CATEGORY_PRODUCTS
+)
+DELETE_PRODUCT_CMD: Final[Command] = Command(
+    "delete product", "удалить товар", CATEGORY_PRODUCTS
+)
 
 # Сам список для автодополнения
-COMMANDS: Final[list[str]] = [
+COMMANDS: Final[list[Command]] = [
     HELP_CMD,
     EXIT_CMD,
     CLEAR_CMD,

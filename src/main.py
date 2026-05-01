@@ -57,42 +57,42 @@ def main() -> None:  # pylint: disable=too-many-statements
                 continue
 
             # Обработка команд
-            if _input == EXIT_CMD:
+            if _input == EXIT_CMD.text:
                 break
 
-            if _input == HELP_CMD:
+            if _input == HELP_CMD.text:
                 show_help()
-            elif _input == CLEAR_CMD:
+            elif _input == CLEAR_CMD.text:
                 console.clear()
 
             # Склады
-            elif _input == LIST_WAREHOUSES_CMD:
+            elif _input == LIST_WAREHOUSES_CMD.text:
                 warehouses_handler.list_warehouses()
-            elif _input.startswith(SHOW_WAREHOUSE_CMD):
-                warehouse_id = int(get_args(_input, SHOW_WAREHOUSE_CMD, 1)[0])
+            elif _input.startswith(SHOW_WAREHOUSE_CMD.text):
+                warehouse_id = int(get_args(_input, SHOW_WAREHOUSE_CMD.text, 1)[0])
                 warehouses_handler.show_warehouse(warehouse_id)
-            elif _input == ADD_WAREHOUSE_CMD:
+            elif _input == ADD_WAREHOUSE_CMD.text:
                 warehouses_handler.add_warehouse()
-            elif _input.startswith(EDIT_WAREHOUSE_CMD):
-                warehouse_id = int(get_args(_input, EDIT_WAREHOUSE_CMD, 1)[0])
+            elif _input.startswith(EDIT_WAREHOUSE_CMD.text):
+                warehouse_id = int(get_args(_input, EDIT_WAREHOUSE_CMD.text, 1)[0])
                 warehouses_handler.edit_warehouse(warehouse_id)
-            elif _input.startswith(DELETE_WAREHOUSE_CMD):
-                warehouse_id = int(get_args(_input, DELETE_WAREHOUSE_CMD, 1)[0])
+            elif _input.startswith(DELETE_WAREHOUSE_CMD.text):
+                warehouse_id = int(get_args(_input, DELETE_WAREHOUSE_CMD.text, 1)[0])
                 warehouses_handler.delete_warehouse(warehouse_id)
 
             # Продукты
-            elif _input == LIST_PRODUCTS_CMD:
+            elif _input == LIST_PRODUCTS_CMD.text:
                 products_handler.list_products()
-            elif _input.startswith(SHOW_PRODUCT_CMD):
-                product_id = int(get_args(_input, SHOW_PRODUCT_CMD, 1)[0])
+            elif _input.startswith(SHOW_PRODUCT_CMD.text):
+                product_id = int(get_args(_input, SHOW_PRODUCT_CMD.text, 1)[0])
                 products_handler.show_product(product_id)
-            elif _input == ADD_PRODUCT_CMD:
+            elif _input == ADD_PRODUCT_CMD.text:
                 products_handler.add_product()
-            elif _input.startswith(EDIT_PRODUCT_CMD):
-                product_id = int(get_args(_input, EDIT_PRODUCT_CMD, 1)[0])
+            elif _input.startswith(EDIT_PRODUCT_CMD.text):
+                product_id = int(get_args(_input, EDIT_PRODUCT_CMD.text, 1)[0])
                 products_handler.edit_product(product_id)
-            elif _input.startswith(DELETE_PRODUCT_CMD):
-                product_id = int(get_args(_input, DELETE_PRODUCT_CMD, 1)[0])
+            elif _input.startswith(DELETE_PRODUCT_CMD.text):
+                product_id = int(get_args(_input, DELETE_PRODUCT_CMD.text, 1)[0])
                 products_handler.delete_product(product_id)
             else:
                 console.print(f"[red]Неизвестная команда: {_input}[/red]")
@@ -109,27 +109,28 @@ def main() -> None:  # pylint: disable=too-many-statements
 
 def show_help():
     """Справка - вывод через rich"""
-    help_text = """
-[bold cyan]ТОВАРЫ:[/bold cyan]
-  [green]list products[/green]          - список всех товаров
-  [green]show product <id>[/green]      - информация о товаре
-  [green]add product[/green]            - добавить товар (интерактивно)
-  [green]edit product <id>[/green]      - редактировать товар
-  [green]delete product <id>[/green]    - удалить товар
+    categories = {}
+    for cmd in COMMANDS:
+        if cmd.category not in categories:
+            categories[cmd.category] = []
+        categories[cmd.category].append(cmd)
 
-[bold cyan]СКЛАДЫ:[/bold cyan]
-  [green]list warehouses[/green]        - список всех складов
-  [green]show warehouse <id>[/green]    - информация о складе
-  [green]add warehouse[/green]          - добавить склад (интерактивно)
-  [green]edit warehouse <id>[/green]    - редактировать склад
-  [green]delete warehouse <id>[/green]  - удалить склад
+    help_lines = []
 
-[bold cyan]ПРОЧЕЕ:[/bold cyan]
-  [green]help[/green]                   - эта справка
-  [green]clear[/green]                  - очистить экран
-  [green]exit[/green]                   - выход
-"""
+    for category_name in [CATEGORY_PRODUCTS, CATEGORY_WAREHOUSES, CATEGORY_GENERAL]:
+        if category_name in categories:
+            help_lines.append(f"[bold cyan]{category_name}:[/bold cyan]")
+            for cmd in categories[category_name]:
+                # Add <id> suffix for commands that need it
+                cmd_help = cmd.text
+                if cmd.text.startswith(("show ", "edit ", "delete ")):
+                    cmd_help += " <id>"
+                help_lines.append(
+                    f"  [green]{cmd_help}[/green]{' ' * (30 - len(cmd_help))}- {cmd.description}"
+                )
+            help_lines.append("")
 
+    help_text = "\n".join(help_lines)
     panel = Panel(help_text, title="📚 Доступные команды", border_style="cyan")
 
     console.print()
