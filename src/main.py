@@ -121,10 +121,9 @@ def show_help():
         if category_name in categories:
             help_lines.append(f"[bold cyan]{category_name}:[/bold cyan]")
             for cmd in categories[category_name]:
-                # Add <id> suffix for commands that need it
                 cmd_help = cmd.text
-                if cmd.text.startswith(("show ", "edit ", "delete ")):
-                    cmd_help += " <id>"
+                if cmd.args:
+                    cmd_help += " " + " ".join(f"<{arg}>" for arg in cmd.args)
                 help_lines.append(
                     f"  [green]{cmd_help}[/green]{' ' * (30 - len(cmd_help))}- {cmd.description}"
                 )

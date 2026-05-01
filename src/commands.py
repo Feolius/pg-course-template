@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Final
+from dataclasses import dataclass, field
+from typing import Final, Sequence
 
 from prompt_toolkit.completion import NestedCompleter
 
@@ -14,6 +14,7 @@ class Command:
     text: str
     description: str
     category: str
+    args: Sequence[str] = field(default_factory=tuple)
 
 
 # Общие команды
@@ -26,16 +27,16 @@ LIST_WAREHOUSES_CMD: Final[Command] = Command(
     "list warehouses", "список всех складов", CATEGORY_WAREHOUSES
 )
 SHOW_WAREHOUSE_CMD: Final[Command] = Command(
-    "show warehouse", "информация о складе", CATEGORY_WAREHOUSES
+    "show warehouse", "информация о складе", CATEGORY_WAREHOUSES, args=("id",)
 )
 ADD_WAREHOUSE_CMD: Final[Command] = Command(
     "add warehouse", "добавить склад (интерактивно)", CATEGORY_WAREHOUSES
 )
 EDIT_WAREHOUSE_CMD: Final[Command] = Command(
-    "edit warehouse", "редактировать склад", CATEGORY_WAREHOUSES
+    "edit warehouse", "редактировать склад", CATEGORY_WAREHOUSES, args=("id",)
 )
 DELETE_WAREHOUSE_CMD: Final[Command] = Command(
-    "delete warehouse", "удалить склад", CATEGORY_WAREHOUSES
+    "delete warehouse", "удалить склад", CATEGORY_WAREHOUSES, args=("id",)
 )
 
 # Команды для товаров
@@ -43,16 +44,16 @@ LIST_PRODUCTS_CMD: Final[Command] = Command(
     "list products", "список всех товаров", CATEGORY_PRODUCTS
 )
 SHOW_PRODUCT_CMD: Final[Command] = Command(
-    "show product", "информация о товаре", CATEGORY_PRODUCTS
+    "show product", "информация о товаре", CATEGORY_PRODUCTS, args=("id",)
 )
 ADD_PRODUCT_CMD: Final[Command] = Command(
     "add product", "добавить товар (интерактивно)", CATEGORY_PRODUCTS
 )
 EDIT_PRODUCT_CMD: Final[Command] = Command(
-    "edit product", "редактировать товар", CATEGORY_PRODUCTS
+    "edit product", "редактировать товар", CATEGORY_PRODUCTS, args=("id",)
 )
 DELETE_PRODUCT_CMD: Final[Command] = Command(
-    "delete product", "удалить товар", CATEGORY_PRODUCTS
+    "delete product", "удалить товар", CATEGORY_PRODUCTS, args=("id",)
 )
 
 # Сам список для автодополнения
