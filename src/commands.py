@@ -73,30 +73,20 @@ COMMANDS: Final[list[Command]] = [
     DELETE_PRODUCT_CMD,
 ]
 
+
+def _build_completer_dict() -> dict:
+    result: dict = {}
+    for cmd in COMMANDS:
+        words = cmd.text.split()
+        current = result
+        for word in words[:-1]:
+            if word not in current:
+                current[word] = {}
+            current = current[word]
+        current[words[-1]] = None
+    return result
+
+
 COMPLETER: Final[NestedCompleter] = NestedCompleter.from_nested_dict(
-    {
-        "help": None,
-        "exit": None,
-        "clear": None,
-        "list": {
-            "warehouses": None,
-            "products": None,
-        },
-        "show": {
-            "warehouse": None,  # После этого ничего не подсказываем
-            "product": None,
-        },
-        "add": {
-            "warehouse": None,
-            "product": None,
-        },
-        "edit": {
-            "warehouse": None,
-            "product": None,
-        },
-        "delete": {
-            "warehouse": None,
-            "product": None,
-        },
-    }
+    _build_completer_dict()
 )
