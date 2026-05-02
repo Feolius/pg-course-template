@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from commands import command, CATEGORY_PRODUCTS
+
 
 @dataclass
 class Product:
@@ -18,6 +20,7 @@ def _render_product(product: Product):  # pylint: disable=unused-argument
     """
 
 
+@command("list products", "список всех товаров", CATEGORY_PRODUCTS)
 def list_products() -> None:
     """
     Выводит список всех продуктов из таблицы catalog.products.
@@ -26,7 +29,8 @@ def list_products() -> None:
     """
 
 
-def show_product(_id: int) -> None:
+@command("show product", "информация о товаре", CATEGORY_PRODUCTS)
+def show_product(_id: str) -> None:
     """
     Показывает детальную информацию о продукте по его ID.
     Если продукт не найден, выводит ошибку через _render_error.
@@ -34,6 +38,7 @@ def show_product(_id: int) -> None:
     """
 
 
+@command("add product", "добавить товар (интерактивно)", CATEGORY_PRODUCTS)
 def add_product() -> None:
     """
     Добавляет новый продукт в базу данных.
@@ -42,7 +47,8 @@ def add_product() -> None:
     """
 
 
-def edit_product(_id: int) -> None:
+@command("edit product", "редактировать товар", CATEGORY_PRODUCTS)
+def edit_product(_id: str) -> None:
     """
     Редактирует существующий продукт.
     Сначала проверяет существование продукта по ID.
@@ -50,7 +56,8 @@ def edit_product(_id: int) -> None:
     """
 
 
-def delete_product(_id: int) -> None:
+@command("delete product", "удалить товар", CATEGORY_PRODUCTS)
+def delete_product(_id: str) -> None:
     """
     Удаляет продукт из базы данных.
     Сначала показывает информацию о продукте.

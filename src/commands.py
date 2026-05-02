@@ -1,5 +1,6 @@
+import inspect
 from dataclasses import dataclass, field
-from typing import Final, Sequence
+from typing import Final, Sequence, Callable
 
 from prompt_toolkit.completion import NestedCompleter
 
@@ -18,71 +19,47 @@ CATEGORIES: Final[Sequence[str]] = [
 @dataclass(frozen=True)
 class Command:
     text: str
+    handler: Callable[..., None]
     description: str
     category: str
     args: Sequence[str] = field(default_factory=tuple)
 
 
-# Общие команды
-HELP_CMD: Final[Command] = Command("help", "эта справка", CATEGORY_GENERAL)
-EXIT_CMD: Final[Command] = Command("exit", "выход", CATEGORY_GENERAL)
-CLEAR_CMD: Final[Command] = Command("clear", "очистить экран", CATEGORY_GENERAL)
+# Глобальный реестр команд
+_COMMANDS_REGISTRY: list[Command] = []
 
-# Команды для складов
-LIST_WAREHOUSES_CMD: Final[Command] = Command(
-    "list warehouses", "список всех складов", CATEGORY_WAREHOUSES
-)
-SHOW_WAREHOUSE_CMD: Final[Command] = Command(
-    "show warehouse", "информация о складе", CATEGORY_WAREHOUSES, args=("id",)
-)
-ADD_WAREHOUSE_CMD: Final[Command] = Command(
-    "add warehouse", "добавить склад (интерактивно)", CATEGORY_WAREHOUSES
-)
-EDIT_WAREHOUSE_CMD: Final[Command] = Command(
-    "edit warehouse", "редактировать склад", CATEGORY_WAREHOUSES, args=("id",)
-)
-DELETE_WAREHOUSE_CMD: Final[Command] = Command(
-    "delete warehouse", "удалить склад", CATEGORY_WAREHOUSES, args=("id",)
-)
 
-# Команды для товаров
-LIST_PRODUCTS_CMD: Final[Command] = Command(
-    "list products", "список всех товаров", CATEGORY_PRODUCTS
-)
-SHOW_PRODUCT_CMD: Final[Command] = Command(
-    "show product", "информация о товаре", CATEGORY_PRODUCTS, args=("id",)
-)
-ADD_PRODUCT_CMD: Final[Command] = Command(
-    "add product", "добавить товар (интерактивно)", CATEGORY_PRODUCTS
-)
-EDIT_PRODUCT_CMD: Final[Command] = Command(
-    "edit product", "редактировать товар", CATEGORY_PRODUCTS, args=("id",)
-)
-DELETE_PRODUCT_CMD: Final[Command] = Command(
-    "delete product", "удалить товар", CATEGORY_PRODUCTS, args=("id",)
-)
+def command(text: str, description: str, category: str):
+    """
+    Декоратор для регистрации команд.
+    Автоматически извлекает аргументы из сигнатуры функции.
+    """
 
-# Сам список для автодополнения
-COMMANDS: Final[list[Command]] = [
-    HELP_CMD,
-    EXIT_CMD,
-    CLEAR_CMD,
-    LIST_WAREHOUSES_CMD,
-    SHOW_WAREHOUSE_CMD,
-    ADD_WAREHOUSE_CMD,
-    EDIT_WAREHOUSE_CMD,
-    DELETE_WAREHOUSE_CMD,
-    LIST_PRODUCTS_CMD,
-    SHOW_PRODUCT_CMD,
-    ADD_PRODUCT_CMD,
-    EDIT_PRODUCT_CMD,
-    DELETE_PRODUCT_CMD,
-]
+    def decorator(func: Callable[..., None]) -> Callable[..., None]:
+        sig = inspect.signature(func)
+        args = tuple(sig.parameters.keys())
+
+        cmd = Command(
+            text=text,
+            handler=func,
+            description=description,
+            category=category,
+            args=args,
+        )
+        _COMMANDS_REGISTRY.append(cmd)
+        return func
+
+    return decorator
+
+
+def get_commands() -> Sequence[Command]:
+    """Возвращает список всех зарегистрированных команд."""
+    return _COMMANDS_REGISTRY
 
 
 def _build_completer_dict() -> dict:
     result: dict = {}
-    for cmd in COMMANDS:
+    for cmd in get_commands():
         words = cmd.text.split()
         current = result
         for word in words[:-1]:
@@ -93,6 +70,35 @@ def _build_completer_dict() -> dict:
     return result
 
 
-COMPLETER: Final[NestedCompleter] = NestedCompleter.from_nested_dict(
-    _build_completer_dict()
-)
+def get_completer() -> NestedCompleter:
+    """Создает completer на основе зарегистрированных команд."""
+    return NestedCompleter.from_nested_dict(_build_completer_dict())
+
+
+def find_command(user_input: str) -> Command | None:
+    """
+    Находит команду по вводу пользователя.
+    Проверяет, начинается ли ввод с текста команды.
+    """
+    for cmd in get_commands():
+        if user_input == cmd.text or user_input.startswith(cmd.text + " "):
+            return cmd
+    return None
+
+
+def get_args(user_input: str, cmd: Command) -> dict[str, str]:
+    """
+    Извлекает аргументы для команды из ввода пользователя.
+    :param user_input: ввод пользователя
+    :param cmd: объект команды
+    :return: словарь аргументов (ключ - имя аргумента, значение - аргумент)
+    """
+    user_input = user_input.strip()
+    if not user_input.startswith(cmd.text):
+        raise ValueError(f"Input is not aligned with {cmd.text}")
+    command_parts = cmd.text.split()
+    input_parts = user_input.split()
+    args = input_parts[len(command_parts) :]
+    if len(args) != len(cmd.args):
+        raise ValueError(f"Command {cmd.text} expects {len(cmd.args)} argument(s)")
+    return dict(zip(cmd.args, args))

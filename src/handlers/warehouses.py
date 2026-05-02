@@ -9,6 +9,7 @@ from rich.table import Table
 from console import console, render_error
 from db import get_conn
 from validators import ChoiceValidator, NonEmptyValidator, YesNoValidator
+from commands import command, CATEGORY_WAREHOUSES
 
 cities = [
     "Москва",
@@ -63,6 +64,7 @@ def _render_warehouse(warehouse: Warehouse) -> None:
     console.print(panel)
 
 
+@command("list warehouses", "список всех складов", CATEGORY_WAREHOUSES)
 def list_warehouses() -> None:
     conn = get_conn()
     table = Table(title="Склады", show_header=True, header_style="bold cyan")
@@ -86,7 +88,8 @@ def list_warehouses() -> None:
     console.print(table)
 
 
-def show_warehouse(_id: int) -> None:
+@command("show warehouse", "информация о складе", CATEGORY_WAREHOUSES)
+def show_warehouse(_id: str) -> None:
     conn = get_conn()
     with conn.cursor(row_factory=class_row(Warehouse)) as cur:
         cur.execute("SELECT * FROM catalog.warehouses WHERE id = %s", (_id,))
@@ -99,6 +102,7 @@ def show_warehouse(_id: int) -> None:
     _render_warehouse(warehouse)
 
 
+@command("add warehouse", "добавить склад (интерактивно)", CATEGORY_WAREHOUSES)
 def add_warehouse() -> None:
     conn = get_conn()
     city = prompt("Город: ", validator=city_validator, completer=city_completer).strip()
@@ -114,7 +118,8 @@ def add_warehouse() -> None:
         console.print(f"[green]Склад в городе {city} добавлен [/green]")
 
 
-def edit_warehouse(_id: int) -> None:
+@command("edit warehouse", "редактировать склад", CATEGORY_WAREHOUSES)
+def edit_warehouse(_id: str) -> None:
     conn = get_conn()
     with conn.cursor(row_factory=class_row(Warehouse)) as cur:
         cur.execute("SELECT * FROM catalog.warehouses WHERE id = %s", (_id,))
@@ -147,7 +152,8 @@ def edit_warehouse(_id: int) -> None:
         console.print(f"[green]Склад в городе {city} обновлен [/green]")
 
 
-def delete_warehouse(_id: int) -> None:
+@command("delete warehouse", "удалить склад", CATEGORY_WAREHOUSES)
+def delete_warehouse(_id: str) -> None:
     conn = get_conn()
     with conn.cursor(row_factory=class_row(Warehouse)) as cur:
         cur.execute("SELECT * FROM catalog.warehouses WHERE id = %s", (_id,))
