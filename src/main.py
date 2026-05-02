@@ -1,22 +1,26 @@
 import logging
 
 from prompt_toolkit import PromptSession
-from psycopg import Connection
-import psycopg
 from rich.panel import Panel
 
 from commands import *  # pylint: disable=wildcard-import,unused-wildcard-import
-from setup import setup_logger
-from warehouses import WarehousesHandler
-from products import ProductsHandler
 from console import console, render_error
-
-DB_NAME: Final[str] = "inventorydb"
-DB_USER: Final[str] = "app_user"
-DB_PASSWORD: Final[str] = "pass"
-DB_HOST: Final[str] = "127.0.0.1"
-DB_PORT: Final[int] = 5432
-
+from db import connect, DB_USER, close
+from products import (
+    add_product,
+    delete_product,
+    edit_product,
+    list_products,
+    show_product,
+)
+from setup import setup_logger
+from warehouses import (
+    add_warehouse,
+    delete_warehouse,
+    edit_warehouse,
+    list_warehouses,
+    show_warehouse,
+)
 
 # Если нужно получить больше деталей о psycopg, следует изменить log level на DEBUG
 setup_logger(psycopg_log_level=logging.INFO)
@@ -24,18 +28,8 @@ setup_logger(psycopg_log_level=logging.INFO)
 
 def main() -> None:  # pylint: disable=too-many-statements
     # Подключение к БД
-    conn: Connection = psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        autocommit=True,
-    )
+    connect()
     logging.info("App Started")
-
-    warehouses_handler = WarehousesHandler(conn)
-    products_handler = ProductsHandler(conn)
 
     # Вывод заголовка через rich
     console.print("\n[bold cyan]═══════════════════════════════════════[/bold cyan]")
@@ -67,33 +61,33 @@ def main() -> None:  # pylint: disable=too-many-statements
 
             # Склады
             elif _input == LIST_WAREHOUSES_CMD.text:
-                warehouses_handler.list_warehouses()
+                list_warehouses()
             elif _input.startswith(SHOW_WAREHOUSE_CMD.text):
                 warehouse_id = int(get_args(_input, SHOW_WAREHOUSE_CMD)["id"])
-                warehouses_handler.show_warehouse(warehouse_id)
+                show_warehouse(warehouse_id)
             elif _input == ADD_WAREHOUSE_CMD.text:
-                warehouses_handler.add_warehouse()
+                add_warehouse()
             elif _input.startswith(EDIT_WAREHOUSE_CMD.text):
                 warehouse_id = int(get_args(_input, EDIT_WAREHOUSE_CMD)["id"])
-                warehouses_handler.edit_warehouse(warehouse_id)
+                edit_warehouse(warehouse_id)
             elif _input.startswith(DELETE_WAREHOUSE_CMD.text):
                 warehouse_id = int(get_args(_input, DELETE_WAREHOUSE_CMD)["id"])
-                warehouses_handler.delete_warehouse(warehouse_id)
+                delete_warehouse(warehouse_id)
 
             # Продукты
             elif _input == LIST_PRODUCTS_CMD.text:
-                products_handler.list_products()
+                list_products()
             elif _input.startswith(SHOW_PRODUCT_CMD.text):
                 product_id = int(get_args(_input, SHOW_PRODUCT_CMD)["id"])
-                products_handler.show_product(product_id)
+                show_product(product_id)
             elif _input == ADD_PRODUCT_CMD.text:
-                products_handler.add_product()
+                add_product()
             elif _input.startswith(EDIT_PRODUCT_CMD.text):
                 product_id = int(get_args(_input, EDIT_PRODUCT_CMD)["id"])
-                products_handler.edit_product(product_id)
+                edit_product(product_id)
             elif _input.startswith(DELETE_PRODUCT_CMD.text):
                 product_id = int(get_args(_input, DELETE_PRODUCT_CMD)["id"])
-                products_handler.delete_product(product_id)
+                delete_product(product_id)
             else:
                 console.print(f"[red]Неизвестная команда: {_input}[/red]")
                 console.print("[dim]Введите 'help' для списка команд[/dim]\n")
@@ -102,8 +96,7 @@ def main() -> None:  # pylint: disable=too-many-statements
             break
         except Exception as e:
             render_error(f"Ошибка: {e}")
-
-    conn.close()  # pylint: disable=no-member
+    close()
     console.print("\n[cyan]До свидания![/cyan]\n")
 
 
