@@ -117,7 +117,7 @@ def show_help():
 
     help_lines = []
 
-    for category_name in [CATEGORY_PRODUCTS, CATEGORY_WAREHOUSES, CATEGORY_GENERAL]:
+    for category_name in CATEGORIES:
         if category_name in categories:
             help_lines.append(f"[bold cyan]{category_name}:[/bold cyan]")
             for cmd in categories[category_name]:
