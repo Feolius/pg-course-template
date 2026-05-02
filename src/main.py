@@ -69,30 +69,30 @@ def main() -> None:  # pylint: disable=too-many-statements
             elif _input == LIST_WAREHOUSES_CMD.text:
                 warehouses_handler.list_warehouses()
             elif _input.startswith(SHOW_WAREHOUSE_CMD.text):
-                warehouse_id = int(get_args(_input, SHOW_WAREHOUSE_CMD.text, 1)[0])
+                warehouse_id = int(get_args(_input, SHOW_WAREHOUSE_CMD)["id"])
                 warehouses_handler.show_warehouse(warehouse_id)
             elif _input == ADD_WAREHOUSE_CMD.text:
                 warehouses_handler.add_warehouse()
             elif _input.startswith(EDIT_WAREHOUSE_CMD.text):
-                warehouse_id = int(get_args(_input, EDIT_WAREHOUSE_CMD.text, 1)[0])
+                warehouse_id = int(get_args(_input, EDIT_WAREHOUSE_CMD)["id"])
                 warehouses_handler.edit_warehouse(warehouse_id)
             elif _input.startswith(DELETE_WAREHOUSE_CMD.text):
-                warehouse_id = int(get_args(_input, DELETE_WAREHOUSE_CMD.text, 1)[0])
+                warehouse_id = int(get_args(_input, DELETE_WAREHOUSE_CMD)["id"])
                 warehouses_handler.delete_warehouse(warehouse_id)
 
             # Продукты
             elif _input == LIST_PRODUCTS_CMD.text:
                 products_handler.list_products()
             elif _input.startswith(SHOW_PRODUCT_CMD.text):
-                product_id = int(get_args(_input, SHOW_PRODUCT_CMD.text, 1)[0])
+                product_id = int(get_args(_input, SHOW_PRODUCT_CMD)["id"])
                 products_handler.show_product(product_id)
             elif _input == ADD_PRODUCT_CMD.text:
                 products_handler.add_product()
             elif _input.startswith(EDIT_PRODUCT_CMD.text):
-                product_id = int(get_args(_input, EDIT_PRODUCT_CMD.text, 1)[0])
+                product_id = int(get_args(_input, EDIT_PRODUCT_CMD)["id"])
                 products_handler.edit_product(product_id)
             elif _input.startswith(DELETE_PRODUCT_CMD.text):
-                product_id = int(get_args(_input, DELETE_PRODUCT_CMD.text, 1)[0])
+                product_id = int(get_args(_input, DELETE_PRODUCT_CMD)["id"])
                 products_handler.delete_product(product_id)
             else:
                 console.print(f"[red]Неизвестная команда: {_input}[/red]")
@@ -137,23 +137,24 @@ def show_help():
     console.print()
 
 
-def get_args(_input: str, command: str, expected: int | None = None) -> list[str]:
+def get_args(_input: str, command: Command) -> dict[str, str]:
     """
     Пытается извлечь аргументы для команды из ввода пользователя
     :param _input: ввод пользователя
-    :param command: команда
-    :param expected: ожидаемое количество аргументов
-    :return: список аргументов
+    :param command: объект команды
+    :return: словарь аргументов (ключ - имя аргумента, значение - аргумент)
     """
     _input = _input.strip()
-    if not _input.startswith(command):
-        raise ValueError(f"Input is not aligned with {command}")
-    command_parts = command.split()
+    if not _input.startswith(command.text):
+        raise ValueError(f"Input is not aligned with {command.text}")
+    command_parts = command.text.split()
     input_parts = _input.split()
     args = input_parts[len(command_parts) :]
-    if expected is not None and len(args) != expected:
-        raise ValueError(f"Command {command} expects {expected} argument(s)")
-    return args
+    if len(args) != len(command.args):
+        raise ValueError(
+            f"Command {command.text} expects {len(command.args)} argument(s)"
+        )
+    return dict(zip(command.args, args))
 
 
 if __name__ == "__main__":
