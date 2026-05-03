@@ -54,6 +54,7 @@ def main() -> None:
         except KeyboardInterrupt:
             break
         except Exception as e:
+            logging.exception(e)
             render_error(f"Ошибка: {e}")
     close()
     console.print("\n[cyan]До свидания![/cyan]\n")
